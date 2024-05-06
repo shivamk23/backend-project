@@ -1,10 +1,10 @@
 import mongoose,{Schema} from "mongoose";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
-import e from "express";
+
 
 const userSchema = new Schema({
-    nusername:{
+    username:{
         type:String,
         required:true,
         unique:true,
@@ -33,7 +33,7 @@ const userSchema = new Schema({
     },
     watchHistory:[
         {
-            type:SVGAnglechema.Types.objectId,
+            type:Schema.Types.ObjectId,
             ref:'Video'
         }
     ],

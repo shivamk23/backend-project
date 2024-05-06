@@ -16,15 +16,13 @@ const registerUser= asyncHandler(async(req,res)=>{
 
     //get user details from frontend
     const {fullName,email,username,password}=req.body;
-    console.log(fullName,email,username,password);
+    console.log(fullName,email,password,username);
 
-    if(
-        [fullName,email,username,password].some((field)=> field?.trim()==="")
-    ){
-        throw new ApiError(400,"All fields are required")
+    if ([fullName, email, username, password].some(field => !field || !field.trim())) {
+        throw new ApiError(400, "All fields are required");
     }
 
-    const exixtedUser = User.findOne({
+    const exixtedUser = await User.findOne({
         $or:[{email},{username}]
     })
 
@@ -33,7 +31,12 @@ const registerUser= asyncHandler(async(req,res)=>{
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage>0){
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar is required")
@@ -54,12 +57,11 @@ const registerUser= asyncHandler(async(req,res)=>{
         coverImage:coverImage?.url || "",
         email,
         password,
-        username:username.toLowercase()
+        username:username.toLowerCase()
     })
 
-    const createdUser = await User.findById(user._id).select(
-        "-password - refreshToken"
-    )
+    const createdUser = await User.findById(user._id).select("-password -refreshToken") //remove password and refresh token from user field from response
+
 
     if(!createdUser){
         throw new ApiError(500,"User creation failed ")
